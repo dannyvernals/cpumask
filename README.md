@@ -15,7 +15,6 @@ positional arguments:
 optional arguments:
   -h, --help          show this help message and exit
   -t, --hyper-thread  allocate HT siblings of dpdk_cores to the dataplane
-danny@newtop:~/vm-shared-disk/script_clones/sdn/cpumask$ 
 ```
 
 ```
