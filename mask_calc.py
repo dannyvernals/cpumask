@@ -2,7 +2,7 @@ import itertools
 import argparse
 
 
-def parse_lscpu(file_location, nic_numa, dpdk_ht, no_dpdk_phy):
+def parse_lscpu(file_location, nic_numa, dpdk_ht, no_dpdk_phy, no_host_phy):
     """
     Take lspcu -p output i.e. lines of:
     # CPU,Core,Socket,Node,,L1d,L1i,L2,L3
@@ -19,17 +19,21 @@ def parse_lscpu(file_location, nic_numa, dpdk_ht, no_dpdk_phy):
         data = sorted(data, key=lambda x: int(x[1]))
         core_map.setdefault(node, list())
         index = 0
+        numa_count = len(set([line[3] for line in cpu_file]))
+        if no_host_phy % numa_count != 0:
+            raise ValueError("host cores not divisible by numa nodes. \nScript "
+                             "can't handle this as it assigns them evenly to numa nodes")
         for _, data_2 in itertools.groupby(data, key=lambda x: x[1]):
             data_2 = list(data_2)
             cpu_0 = int(data_2[0][0])
             cpu_1 = int(data_2[1][0])
-            if index == 0: 
+            if index < no_host_phy / numa_count:
                 core_map[node].append((cpu_0, cpu_1, 'H', 'H'))
-            elif index <= int(no_dpdk_phy) and node == int(nic_numa):
+            elif index < no_dpdk_phy + (no_host_phy / numa_count) and node == nic_numa:
                 if dpdk_ht:
                     core_map[node].append((cpu_0, cpu_1, 'D', 'D'))
                 else:
-                    core_map[node].append((cpu_0, cpu_1, 'D', 'D'))
+                    core_map[node].append((cpu_0, cpu_1, 'D', '0'))
             else:
                 core_map[node].append((cpu_0, cpu_1, 'N', 'N'))
             index += 1
@@ -75,8 +79,9 @@ def cli_grab():
     """take stuff from cli, output it in a dict"""
     parser = argparse.ArgumentParser(description="Calculate DPDK cpu mask values from 'lscpu -p'")
     parser.add_argument("lscpu_file", help="Location of file containing lscpu -p output")
-    parser.add_argument("nic_numa", help="NUMA node used for NIC")
-    parser.add_argument("dpdk_cores", help="No. physical cores dedicated to DPDK data-plane")
+    parser.add_argument("nic_numa", type=int, help="NUMA node used for NIC")
+    parser.add_argument("dpdk_cores", type=int, help="No. physical cores dedicated to DPDK data-plane")
+    parser.add_argument("host_cores", type=int, help="No. physical cores dedicated to host OS")
     parser.add_argument("-t", "--hyper-thread", action="store_true", help="allocate HT "
                                                   "siblings of dpdk_cores to the dataplane")
     args = vars(parser.parse_args())
@@ -101,5 +106,5 @@ def print_cpu_map(core_map):
 
 if __name__ == '__main__':
     args = cli_grab()
-    core_map = parse_lscpu(args['lscpu_file'], args['nic_numa'], args['hyper_thread'], args['dpdk_cores'])
+    core_map = parse_lscpu(args['lscpu_file'], args['nic_numa'], args['hyper_thread'], args['dpdk_cores'], args['host_cores'])
     print_cpu_map(core_map)
