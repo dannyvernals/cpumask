@@ -38,8 +38,10 @@ def format_cores(list_name, cores_list):
     while i < len(cores_list):
         core = cores_list[i]
         i += 1
-        if pointer + 1 == core and i != len(cores_list):
+        if pointer + 1 == core:
             pointer += 1
+            if i == len(cores_list):
+                cores_terse_list.append('{}-{}'.format(start, pointer))
         else:
             if start != pointer:
                 cores_terse_list.append('{}-{}'.format(start, pointer))
