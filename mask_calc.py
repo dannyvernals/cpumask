@@ -61,7 +61,7 @@ def format_cores(list_name, cores_list):
 
 
 def filter_cores(all_cores, purpose):
-    """reduce passed list to one containing only the specified purpose"""
+    """reduce passed list to one containing CPUs with only the specified purpose"""
     cpu_list = []
     for cpu in all_cores:
         if cpu[2] in purpose:
