@@ -3,6 +3,12 @@ import argparse
 
 
 def parse_lscpu(file_location, nic_numa, dpdk_ht, no_dpdk_phy):
+    """
+    Take lspcu -p output i.e. lines of:
+    # CPU,Core,Socket,Node,,L1d,L1i,L2,L3
+    parse it and generate dictionary where numa is key and value is a list of tuples.
+    tuples contain phy_cpu_id, its' HT sibling, phy role & HT sibling role
+    """
     with open(file_location) as fh:
         cpu_file = fh.readlines()
     core_map = {}
@@ -18,19 +24,21 @@ def parse_lscpu(file_location, nic_numa, dpdk_ht, no_dpdk_phy):
             cpu_0 = int(data_2[0][0])
             cpu_1 = int(data_2[1][0])
             if index == 0: 
-                core_map[node].append([cpu_0, cpu_1, 'H', 'H'])
+                core_map[node].append((cpu_0, cpu_1, 'H', 'H'))
             elif index <= int(no_dpdk_phy) and node == int(nic_numa):
                 if dpdk_ht:
-                    core_map[node].append([cpu_0, cpu_1, 'D', 'D'])
+                    core_map[node].append((cpu_0, cpu_1, 'D', 'D'))
                 else:
-                    core_map[node].append([cpu_0, cpu_1, 'D', 'D'])
+                    core_map[node].append((cpu_0, cpu_1, 'D', 'D'))
             else:
-                core_map[node].append([cpu_0, cpu_1, 'N', 'N'])
+                core_map[node].append((cpu_0, cpu_1, 'N', 'N'))
             index += 1
     return core_map
 
 
 def format_cores(list_name, cores_list):
+    """Take a standard list() of cores and produce the abridged output used in conf files.
+    e.g.  1-10,12-24"""
     cores_list = sorted(cores_list)
     cores_terse_list = []
     start = pointer = cores_list[0]
@@ -53,6 +61,7 @@ def format_cores(list_name, cores_list):
 
 
 def filter_cores(all_cores, purpose):
+    """reduce passed list to one containing only the specified purpose"""
     cpu_list = []
     for cpu in all_cores:
         if cpu[2] in purpose:
@@ -75,6 +84,8 @@ def cli_grab():
 
 
 def print_cpu_map(core_map):
+    """Print a map of CPU roles against numa nodes and core number.
+    Print cpumasks for various Openstack / Contrail components according to the same mapping"""
     print('H = hostOS, D = Contrail DPDK dataplane, 0 = unassigned, N = Nova')
     for numa, cpus in core_map.items():
         format_string = ' ' * 10 + '{:12} '  + '{:2} ' *(len(cpus))
@@ -83,7 +94,7 @@ def print_cpu_map(core_map):
             print(format_string.format(line_type, *(str(cpu[index]) for cpu in cpus)))
     all_cores = [inner for outer in core_map.values() for inner in outer]
     for line, core_type in zip(('isolcpus','nova conf','CPU affinity','DPDK cores'), 
-                               (['0', 'D', 'N'],['N'], ['H'], ['D'])):
+                               (('0', 'D', 'N'),('N'), ('H'), ('D'))):
         format_cores(line, filter_cores(all_cores, core_type))
  
 
