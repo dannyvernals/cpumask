@@ -30,8 +30,9 @@ numa-node 1:
           role:        H  N  N  N  N  N  N  N  N  N  N  N  N  N  N  N  N  N  N  N  
           HT Sibling:  60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 
           role:        H  N  N  N  N  N  N  N  N  N  N  N  N  N  N  N  N  N  N  N  
-isolcpus: 1-19,21-39,41-59,61-78
-nova conf: 4-19,21-39,44-59,61-78
+isolcpus: 1-19,21-39,41-59,61-79
+nova conf: 4-19,21-39,44-59,61-79
 CPU affinity: 0,20,40,60
-DPDK cores: 1-3,41-42
+DPDK cores: 1-3,41-43
+
 ```
