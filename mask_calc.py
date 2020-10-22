@@ -90,7 +90,7 @@ def cli_grab():
     parser.add_argument("host_cores", type=int, help="No. physical cores dedicated to host OS")
     parser.add_argument("no_nics", type=int, help="No. of NICs in bond associated with vhost0")
     parser.add_argument("-t", "--hyper-thread", action="store_true", help="allocate HT siblings "
-                                                                          "dpdk_cores to the"
+                                                                          "dpdk_cores to the "
                                                                           "to the dataplane")
     args = vars(parser.parse_args())
     return args
