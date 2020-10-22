@@ -88,7 +88,7 @@ def cli_grab():
     parser.add_argument("dpdk_cores", type=int, help="No. physical cores dedicated"
                                                      " to DPDK data-plane")
     parser.add_argument("host_cores", type=int, help="No. physical cores dedicated to host OS")
-    parser.add_argument("no_nics", type=int, help="No. of NICs in bond associated with vhost0")
+    parser.add_argument("nics", type=int, help="No. of NICs in bond associated with vhost0")
     parser.add_argument("-t", "--hyper-thread", action="store_true", help="allocate HT siblings "
                                                                           "dpdk_cores to the "
                                                                           "to the dataplane")
@@ -111,13 +111,13 @@ def print_cpu_map(core_map):
         format_cores(line, filter_cores(all_cores, core_type))
 
 
-def print_mempool(dpdk_cores, hyper_thread, no_nics):
+def print_mempool(dpdk_cores, hyper_thread, nics):
     """calculate mempool size using formula:
     vr_mempool_sz = 2 * (dpdk_rxd_sz + dpdk_txd_sz) * (num_cores) * (num_ports)"""
     if hyper_thread:    
-        mempool_size = 2 * 4096 * (dpdk_cores * 2) * no_nics
+        mempool_size = 2 * 4096 * (dpdk_cores * 2) * nics
     else:
-        mempool_size = 2 * 4096 * dpdk_cores * no_nics
+        mempool_size = 2 * 4096 * dpdk_cores * nics
     print("vr_mempool_sz: {} (assuming 2048 Rx/Tx descriptor ring size)".format(mempool_size))
 
 
@@ -128,6 +128,6 @@ if __name__ == '__main__':
                            ARGS['hyper_thread'], ARGS['dpdk_cores'], ARGS['host_cores']
                            )
     print_cpu_map(CORE_MAP)
-    print_mempool(ARGS['dpdk_cores'], ARGS['hyper_thread'], ARGS['no_nics'])
+    print_mempool(ARGS['dpdk_cores'], ARGS['hyper_thread'], ARGS['nics'])
 
    
