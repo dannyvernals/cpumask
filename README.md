@@ -1,5 +1,16 @@
 # cpumask
-Calculate CPU mask configurations for Contrail DPDK based on lscpu
+Calculate CPU mask configurations for Contrail + Openstack DPDK Data-Plane
+
+## About
+To have a working & high-performance Contrail deployment using DPDK Data-Plane:  
+* CPU cores need to be dedicated to the Data-Plane.  
+* We need to dedicate CPUs to the HostOS.
+* Make sure Nova doesn't allocate either of these to VMs.  
+* The highest performance also requires colocating the Data-Plane cores in the same NUMA as the physical NICs.  
+
+This can involve configuration in several areas: kernel isolcpus, systemd CPUAffinity, nova.conf vcpu_pin_set and within Contrail.  
+
+This script generates the required values for these parameters based on the CPU topology (lscpu -p) and required allocations.
 
 ```
 python mask_calc.py -h
