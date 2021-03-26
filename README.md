@@ -12,6 +12,7 @@ This can involve configuration in several areas: kernel isolcpus, systemd CPUAff
 
 This script generates the required values for these parameters based on the CPU topology (lscpu -p) and required allocations.
 
+## Usage
 ```
 python mask_calc.py -h
 usage: mask_calc.py [-h] [-t] lscpu_file nic_numa dpdk_cores host_cores nics
